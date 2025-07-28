@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>조치원읍 지도</title>
+    <link rel="stylesheet" href="background.css" />
+    <link rel="stylesheet" href="searchbar.css" />
+    <link rel="stylesheet" href="category.css" />
+    <link rel="stylesheet" href="map.area.css" />
+    <link rel="stylesheet" href="bottomnav.css" />
+    <script
+      type="text/javascript"
+      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=476ca7db55ecd66a49bc53036289f68b"
+    ></script>
+    <!-- 
+    카카오맵 API 키 확인 필요:
+    1. JavaScript API 키 사용 (REST API 키 아님)
+    2. 도메인 등록: kaia-coder.github.io
+    3. 카카오 개발자 콘솔에서 JavaScript 키 확인
+    -->
+  </head>
+  <body>
+    <div class="background">
+      <!-- 상단 검색창 -->
+      <div class="search-bar">
+        <img
+          src="assets/nav/search.svg"
+          class="search-icon"
+          width="18"
+          height="18"
+          alt="검색"
+        />
+        <input
+          class="search-input"
+          type="text"
+          placeholder="검색"
+          id="main-search-input"
+          value="검색"
+        />
+      </div>
+      <!-- 카테고리 바 -->
+      <div class="category-bar">
+        <button class="category-btn">전체</button>
+        <button class="category-btn">맛집</button>
+        <button class="category-btn">카페</button>
+        <button class="category-btn">공원/휴식</button>
+        <button class="category-btn">문화/관광</button>
+      </div>
+      <!-- 지도 영역은 항상 하단 네비 전까지만 보임 -->
+      <div class="map-area" id="mapArea">
+        <div id="map" style="width: 100%; height: 100%"></div>
+      </div>
+      <!-- 하단 네비게이션 -->
+      <nav class="bottom-nav">
+        <a class="nav-btn" href="festival.html">
+          <span class="icon-box"
+            ><img src="assets/nav/festival.svg" alt="축제"
+          /></span>
+          <span class="nav-label">축제 정보</span>
+        </a>
+        <a class="nav-btn" href="https://www.youtube.com/sejongcity">
+          <span class="icon-box"
+            ><img src="assets/nav/youtube.svg" alt="유튜브"
+          /></span>
+          <span class="nav-label">세종 공식 유튜브</span>
+        </a>
+        <a class="nav-btn" href="src/index.html">
+          <span class="icon-box"
+            ><img src="assets/nav/trip.svg" alt="추천 코스"
+          /></span>
+          <span class="nav-label">추천 코스</span>
+        </a>
+      </nav>
+    </div>
+
+    <script>
+      // URL에서 지역 파라미터 가져오기
+      const urlParams = new URLSearchParams(window.location.search);
+      const region = urlParams.get('region');
+
+      // 지역별 좌표 설정
+      const regionCoordinates = {
+        jochiwon: { lat: 36.6033, lng: 127.2983 }, // 조치원읍 정확한 좌표
+        center: { lat: 36.4875, lng: 127.2817 },
+        jeondong: { lat: 36.4875, lng: 127.2817 },
+        yeonseo: { lat: 36.4875, lng: 127.2817 },
+        yeondong: { lat: 36.4875, lng: 127.2817 },
+        janggun: { lat: 36.4875, lng: 127.2817 },
+        bugang: { lat: 36.4875, lng: 127.2817 },
+        guemnam: { lat: 36.4875, lng: 127.2817 },
+        sojeong: { lat: 36.4875, lng: 127.2817 },
+        jeonui: { lat: 36.4875, lng: 127.2817 },
+      };
+
+      // 기본 좌표 (세종시 중심)
+      const defaultCoords = { lat: 36.4875, lng: 127.2817 };
+      const coords = regionCoordinates[region] || defaultCoords;
+
+      // 카카오맵 초기화
+      function initMap() {
+        console.log('🗺️ 카카오맵 초기화 시작...');
+
+        const container = document.getElementById('map');
+        if (!container) {
+          console.error('❌ map 컨테이너를 찾을 수 없습니다!');
+          return;
+        }
+
+        console.log('📍 좌표:', coords);
+
+        try {
+          const options = {
+            center: new kakao.maps.LatLng(coords.lat, coords.lng),
+            level: 8,
+          };
+
+          const map = new kakao.maps.Map(container, options);
+          console.log('✅ 카카오맵 생성 완료');
+
+          // 마커 추가
+          const marker = new kakao.maps.Marker({
+            position: new kakao.maps.LatLng(coords.lat, coords.lng),
+          });
+
+          marker.setMap(map);
+          console.log('📍 마커 추가 완료');
+
+          // 지역명 표시
+          if (region) {
+            const regionNames = {
+              jochiwon: '조치원읍',
+              center: '세종시 중심',
+              jeondong: '전동면',
+              yeonseo: '연서면',
+              yeondong: '연동면',
+              janggun: '장군면',
+              bugang: '부강면',
+              guemnam: '금남면',
+              sojeong: '소정면',
+              jeonui: '전의면',
+            };
+
+            const regionName = regionNames[region] || region;
+
+            // 인포윈도우 추가
+            const infowindow = new kakao.maps.InfoWindow({
+              content: `<div style="padding:5px;font-size:12px;">${regionName}</div>`,
+            });
+
+            infowindow.open(map, marker);
+            console.log('🏷️ 인포윈도우 추가 완료:', regionName);
+          }
+        } catch (error) {
+          console.error('❌ 카카오맵 초기화 실패:', error);
+          // 카카오맵 실패 시 대체 지도 표시
+          showFallbackMap();
+        }
+      }
+
+      // 대체 지도 표시 (API 키 없음)
+      function showFallbackMap() {
+        console.log('🗺️ 대체 지도 표시 중...');
+        const container = document.getElementById('map');
+        if (!container) return;
+
+        const regionNames = {
+          jochiwon: '조치원읍',
+          center: '세종시 중심',
+          jeondong: '전동면',
+          yeonseo: '연서면',
+          yeondong: '연동면',
+          janggun: '장군면',
+          bugang: '부강면',
+          guemnam: '금남면',
+          sojeong: '소정면',
+          jeonui: '전의면',
+        };
+
+        const regionName = regionNames[region] || region;
+
+        // 개선된 대체 지도
+        container.innerHTML = `
+          <div style="width:100%; height:100%; background:linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:18px; position:relative;">
+            <div style="font-size:48px; margin-bottom:15px;">🗺️</div>
+            <div style="font-size:20px; font-weight:bold; margin-bottom:8px; color:#1976d2;">${regionName}</div>
+            <div style="font-size:14px; color:#424242; margin-bottom:5px;">📍 좌표: ${coords.lat}, ${coords.lng}</div>
+            <div style="font-size:12px; color:#757575; margin-top:10px; text-align:center;">
+              세종시 ${regionName} 지역<br>
+              지도 정보를 확인할 수 있습니다
+            </div>
+            <div style="position:absolute; top:10px; right:10px; background:rgba(255,255,255,0.9); padding:5px 10px; border-radius:15px; font-size:11px; color:#666;">
+              📍 지도
+            </div>
+          </div>
+        `;
+        console.log('✅ 대체 지도 표시 완료');
+      }
+
+      // 카카오맵 API 로드 완료 후 지도 초기화
+      let retryCount = 0;
+      const MAX_RETRIES = 5;
+
+      function tryInitMap() {
+        console.log(
+          '🔄 카카오맵 API 확인 중... (시도: ' +
+            (retryCount + 1) +
+            '/' +
+            MAX_RETRIES +
+            ')'
+        );
+
+        // 최대 재시도 횟수 체크
+        if (retryCount >= MAX_RETRIES) {
+          console.log('❌ 최대 재시도 횟수 초과, 대체 지도 표시');
+          showFallbackMap();
+          return;
+        }
+
+        // 카카오맵 API가 로드되었는지 확인
+        if (typeof kakao !== 'undefined' && kakao.maps) {
+          console.log('✅ 카카오맵 API 로드 완료, 지도 초기화 시작');
+          initMap();
+        } else {
+          console.log('⏳ 카카오맵 API 로드 대기 중...');
+          retryCount++;
+          setTimeout(tryInitMap, 1000); // 1초 후 재시도
+        }
+      }
+
+      // 페이지 로드 시 지도 초기화 시도
+      document.addEventListener('DOMContentLoaded', function () {
+        console.log('📄 DOM 로드 완료');
+        setTimeout(tryInitMap, 100);
+      });
+
+      // 추가 안전장치: window load 이벤트
+      window.addEventListener('load', function () {
+        console.log('🌐 페이지 로드 완료, 지도 초기화 재시도');
+        setTimeout(tryInitMap, 500);
+      });
+
+      // 최종 안전장치: 3초 후 재시도
+      setTimeout(function () {
+        console.log('⏰ 최종 재시도');
+        if (typeof kakao !== 'undefined' && kakao.maps) {
+          tryInitMap();
+        } else {
+          console.log('❌ 카카오맵 API 로드 실패, 대체 지도 표시');
+          showFallbackMap();
+        }
+      }, 3000);
+
+      // 검색 기능 추가
+      const searchInput = document.getElementById('main-search-input');
+      if (searchInput) {
+        searchInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') handleSearch();
+        });
+        const searchIcon = document.querySelector('.search-icon');
+        if (searchIcon) {
+          searchIcon.addEventListener('click', handleSearch);
+        }
+      }
+
+      function handleSearch() {
+        const query = searchInput.value.trim();
+        if (!query) return;
+
+        // API URL 설정
+        const API_BASE_URL = window.location.hostname.includes('github.io')
+          ? 'https://sejong-festival-api.onrender.com'
+          : 'http://localhost:8000';
+
+        fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.type === 'region' && data.key) {
+              window.location.href = `./map.html?region=${encodeURIComponent(
+                data.key
+              )}`;
+            } else if (
+              (data.type === 'cafe' || data.type === 'food') &&
+              data.key
+            ) {
+              window.location.href = `./map-list.html?type=${encodeURIComponent(
+                data.type
+              )}&name=${encodeURIComponent(data.key)}`;
+            } else {
+              alert('검색 결과가 없습니다.');
+            }
+          })
+          .catch((err) => {
+            console.error('검색 오류:', err);
+            alert('검색 중 오류가 발생했습니다.');
+          });
+      }
+
+      // 카테고리 버튼 활성화
+      document.querySelectorAll('.category-btn').forEach((btn) => {
+        btn.addEventListener('click', function () {
+          document
+            .querySelectorAll('.category-btn')
+            .forEach((b) => b.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+    </script>
+  </body>
+</html>

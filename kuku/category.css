@@ -1,0 +1,31 @@
+.category-bar {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px;
+  margin-bottom: 8px;
+}
+.category-btn {
+  padding: 6px 16px;
+  border-radius: 18px;
+  border: 1.2px solid #D3DEE1;
+  background: #fff;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border 0.15s, color 0.15s;
+  outline: none;
+  user-select: none;
+}
+.category-btn.active,
+.category-btn:focus {
+  background: #FFEDB5;
+  color: #000000;
+  border-color: #D3DEE1;
+}
+.category-btn.active {
+  background: #257199;
+  color: #fff;
+  font-weight: bold;
+  /* 원하는 스타일 추가 */
+}
